@@ -1,1 +1,21 @@
+- name: Install EPEL repository
+  ansible.builtin.yum:
+    name: epel-release
+    state: present
+  become: yes
 
+- name: Install Python and pip
+  ansible.builtin.yum:
+    name:
+      - python3
+      - python3-pip
+    state: present
+  become: yes
+
+- name: Install Flask and psycopg2-binary
+  ansible.builtin.pip:
+    name:
+      - Flask==2.3.2
+      - psycopg2-binary==2.9.9
+    executable: pip3
+  become: yes

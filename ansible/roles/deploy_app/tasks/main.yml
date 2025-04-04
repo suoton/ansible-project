@@ -1,1 +1,26 @@
+- name: Install git
+  ansible.builtin.yum:
+    name: git
+    state: present
+  become: yes
 
+- name: Clone Flask app repository
+  ansible.builtin.git:
+    repo: "https://github.com/username/flask-devops-app.git"  # Replace with your repo URL
+    dest: /opt/flask_app
+    version: main
+  become: yes
+
+- name: Copy config file with database credentials
+  ansible.builtin.template:
+    src: config.py.j2
+    dest: /opt/flask_app/config.py
+    mode: "0644"
+  become: yes
+
+- name: Run Flask app in the background
+  ansible.builtin.shell: |
+    nohup python3 /opt/flask_app/app.py > /opt/flask_app/app.log 2>&1 &
+  become: yes
+  args:
+    chdir: /opt/flask_app

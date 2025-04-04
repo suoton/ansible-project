@@ -1,1 +1,53 @@
+- name: Install PostgreSQL
+  ansible.builtin.yum:
+    name:
+      - postgresql-server
+      - postgresql-contrib
+    state: present
+  become: yes
 
+- name: Initialize PostgreSQL database
+  ansible.builtin.command: /usr/bin/postgresql-setup --initdb
+  become: yes
+  args:
+    creates: /var/lib/pgsql/data/postgresql.conf
+
+- name: Start and enable PostgreSQL
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+    enabled: yes
+  become: yes
+
+- name: Create devopsdb database
+  ansible.builtin.shell: psql -c "CREATE DATABASE devopsdb;"
+  become: yes
+  become_user: postgres
+  args:
+    executable: /bin/bash
+  ignore_errors: yes
+
+- name: Create users table and insert data
+  ansible.builtin.shell: |
+    psql -d devopsdb -c "CREATE TABLE users (id SERIAL PRIMARY KEY, name VARCHAR(50));"
+    psql -d devopsdb -c "INSERT INTO users (name) VALUES ('Alice'), ('Bob'), ('Charlie');"
+  become: yes
+  become_user: postgres
+  args:
+    executable: /bin/bash
+  ignore_errors: yes
+
+- name: Configure PostgreSQL to listen on all interfaces
+  ansible.builtin.lineinfile:
+    path: /var/lib/pgsql/data/postgresql.conf
+    regexp: "^#listen_addresses = 'localhost'"
+    line: "listen_addresses = '*'"
+  become: yes
+  notify: Restart PostgreSQL
+
+- name: Allow app servers to connect
+  ansible.builtin.lineinfile:
+    path: /var/lib/pgsql/data/pg_hba.conf
+    line: "host    all    all    0.0.0.0/0    md5"
+  become: yes
+  notify: Restart PostgreSQL

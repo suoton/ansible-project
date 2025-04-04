@@ -1,1 +1,20 @@
+- name: Configure PostgreSQL on DB server
+  hosts: db_servers
+  vars:
+    db_host: ""
+    db_name: "devopsdb"
+    db_user: "devops"
+    db_pass: "password"
+  roles:
+    - postgresql
 
+- name: Deploy Flask app on app servers
+  hosts: app_servers
+  vars:
+    db_host: ""
+    db_name: "devopsdb"
+    db_user: "devops"
+    db_pass: "password"
+  roles:
+    - python_flask
+    - deploy_app

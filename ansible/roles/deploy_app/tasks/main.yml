@@ -6,7 +6,7 @@
 
 - name: Clone Flask app repository
   ansible.builtin.git:
-    repo: "https://github.com/username/flask-devops-app.git"  # Replace with your repo URL
+    repo: "https://github.com/suoton/ansible-project.git"
     dest: /opt/flask_app
     version: main
   become: yes
